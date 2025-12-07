@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from borrowings.models import Borrowing
@@ -8,6 +9,7 @@ from borrowings.serializers import BorrowingSerializer
 class BorrowingGeneric(generics.ListCreateAPIView):
     queryset = Borrowing.objects.filter()
     serializer_class = BorrowingSerializer
+    permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
         serializer.save(
