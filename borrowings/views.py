@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -35,15 +36,25 @@ class BorrowingGeneric(generics.ListCreateAPIView):
         is_active = self.request.query_params.get("is_active")
         user_pk = self.request.query_params.get("user_id")
 
-        if is_active == "True":
-            queryset = queryset.filter(actual_return_date__isnull=True)
-            print("true")
-        elif is_active == "False":
-            queryset = queryset.filter(actual_return_date__isnull=False)
-            print("false")
+        if is_active is not None:
+            is_active = is_active.lower() == "true"
+            if is_active:
+                queryset = queryset.filter(actual_return_date__isnull=True)
+            else:
+                queryset = queryset.filter(actual_return_date__isnull=False)
 
-        if user_pk and is_user_admin:
-            queryset = queryset.filter(user__pk=user_pk)
+        if user_pk:
+            if not is_user_admin:
+                raise PermissionDenied(
+                    {"detail": "You don't have permission to view this borrowing."}
+                )
+            user_pk = int(user_pk)
+            try:
+                queryset = queryset.filter(user__pk=user_pk)
+            except Exception as e:
+                raise ValueError(
+                    {"detail": f"{e}"}
+                )
 
         return queryset
 
