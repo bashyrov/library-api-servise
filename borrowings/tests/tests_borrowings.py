@@ -103,15 +103,22 @@ class AuthenticatedBorrowingsTest(TestCase):
     def test_user_id_filter_unauthorized(self):
         sample_borrowing(client=self.user)
 
+        self.user_test = user_model.objects.create_user(
+            email="admi1@admin.com",
+            password="password",
+            is_staff=True,
+        )
+
         response = self.client.get(
             BORROWINGS_URL,
             {
-                "user_id": "2",
+                "user_id": self.user_test.id,
             }
         )
+        print(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data["detail"], "You don't have permission to view this borrowing")
+        self.assertEqual(response.data["detail"], "You don't have permission to view this borrowing.")
 
 
 class AdminBorrowingsTest(TestCase):

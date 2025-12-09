@@ -1,5 +1,5 @@
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -45,15 +45,15 @@ class BorrowingGeneric(generics.ListCreateAPIView):
 
         if user_pk:
             if not is_user_admin:
-                raise ValidationError(
-                    {"user_id": "You don't have a permission to view this endpoint."}
+                raise PermissionDenied(
+                    {"detail": "You don't have permission to view this borrowing."}
                 )
             user_pk = int(user_pk)
             try:
                 queryset = queryset.filter(user__pk=user_pk)
             except Exception as e:
                 raise ValueError(
-                    {"user_id": f"{e}"}
+                    {"detail": f"{e}"}
                 )
 
         return queryset
