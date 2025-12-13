@@ -51,6 +51,7 @@ class BorrowingViewSet(mixins.ListModelMixin,
             borrowing_obj.set_actual_return_date()
             book_obj = borrowing_obj.book
             book_obj.inventory += 1
+            book_obj.save()
 
         return Response(
             {"detail": "Returned successfully."},
