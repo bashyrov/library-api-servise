@@ -7,7 +7,11 @@ from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer
 
 
-class BorrowingGeneric(generics.ListCreateAPIView):
+class BorrowingViewSet(mixins.ListModelMixin,
+                       mixins.CreateModelMixin,
+                       mixins.RetrieveModelMixin,
+                       viewsets.GenericViewSet,
+                       ):
     serializer_class = BorrowingSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -17,12 +21,12 @@ class BorrowingGeneric(generics.ListCreateAPIView):
         )
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+        borrowing_obj = self.get_object()
 
-        if not instance.user == self.request.user:
+        if not borrowing_obj.user == self.request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(borrowing_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get_queryset(self):
