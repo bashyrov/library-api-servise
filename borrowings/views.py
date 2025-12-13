@@ -1,4 +1,6 @@
-from rest_framework import generics, status
+from django.db import transaction
+from rest_framework import status, mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,7 +9,11 @@ from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer
 
 
-class BorrowingGeneric(generics.ListCreateAPIView):
+class BorrowingViewSet(mixins.ListModelMixin,
+                       mixins.CreateModelMixin,
+                       mixins.RetrieveModelMixin,
+                       viewsets.GenericViewSet,
+                       ):
     serializer_class = BorrowingSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -17,13 +23,40 @@ class BorrowingGeneric(generics.ListCreateAPIView):
         )
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+        borrowing_obj = self.get_object()
 
-        if not instance.user == self.request.user:
+        if not borrowing_obj.user == self.request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(borrowing_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="return")
+    def return_borrowing(self, request, pk=None): #TODO: Add validation to expected_date == actual_date
+        borrowing_obj = self.get_object()
+
+        if not borrowing_obj.user == self.request.user:
+            return Response(
+                {"detail": "You don't have permission to do this."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if borrowing_obj.actual_return_date:
+            return Response(
+                {"detail": "Already returned."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with transaction.atomic():
+            borrowing_obj.set_actual_return_date()
+            book_obj = borrowing_obj.book
+            book_obj.inventory += 1
+            book_obj.save()
+
+        return Response(
+            {"detail": "Returned successfully."},
+            status=status.HTTP_200_OK
+        )
 
     def get_queryset(self):
         user = self.request.user
