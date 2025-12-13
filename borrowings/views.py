@@ -29,6 +29,32 @@ class BorrowingViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(borrowing_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="return")
+    def return_borrowing(self, request, pk=None): #TODO: Add validation to expected_date == actual_date
+        borrowing_obj = self.get_object()
+
+        if not borrowing_obj.user == self.request.user:
+            return Response(
+                {"detail": "You don't have permission to do this."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if borrowing_obj.actual_return_date:
+            return Response(
+                {"detail": "Already returned."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with transaction.atomic():
+            borrowing_obj.set_actual_return_date()
+            book_obj = borrowing_obj.book
+            book_obj.inventory += 1
+
+        return Response(
+            {"detail": "Returned successfully."},
+            status=status.HTTP_200_OK
+        )
+
     def get_queryset(self):
         user = self.request.user
         is_user_admin = user.is_superuser or user.is_staff
