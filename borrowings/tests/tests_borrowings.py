@@ -10,7 +10,7 @@ from books.models import Book
 from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer
 
-BORROWINGS_URL = reverse("borrowings:borrowings-list-create")
+BORROWINGS_URL = reverse("borrowings:borrowings-list")
 
 user_model = get_user_model()
 
@@ -115,10 +115,23 @@ class AuthenticatedBorrowingsTest(TestCase):
                 "user_id": self.user_test.id,
             }
         )
-        print(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"], "You don't have permission to view this borrowing.")
+
+    def test_return_book_increase_inventory(self):
+        borrowings_obj = sample_borrowing(client=self.user)
+        book_obj_before = borrowings_obj.book
+
+        response = self.client.post(
+            reverse("borrowings:borrowings-return-borrowing", args=[borrowings_obj.id])
+        )
+
+        book_obj_after = Book.objects.get(pk=book_obj_before.pk)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["detail"], "Returned successfully.")
+        self.assertEqual(book_obj_after.inventory, book_obj_before.inventory + 1)
 
 
 class AdminBorrowingsTest(TestCase):
