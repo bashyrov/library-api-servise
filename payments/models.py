@@ -24,7 +24,7 @@ class Payment(models.Model):
         choices=StatusChoices,
     )
 
-    borrowing = models.ForeignKey(Borrowing, on_delete=models.PROTECT)
+    borrowing = models.ForeignKey(Borrowing, on_delete=models.PROTECT, related_name="payments")
     session_url = models.URLField(null=False, blank=False)
     session_id = models.CharField(null=False, blank=False, max_length=255)
     money_to_paid = models.DecimalField(decimal_places=2, max_digits=10)
