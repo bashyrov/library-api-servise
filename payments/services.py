@@ -1,7 +1,10 @@
 from decimal import Decimal
 import stripe
+from django.conf import settings
 from borrowings.models import Borrowing
 from payments.models import Payment
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class PaymentService:
@@ -15,11 +18,12 @@ class PaymentService:
                     'product_data': {
                         'name': borrowing.book.title,
                     },
-                    'unit_amount': money_to_paid * 100,
+                    'unit_amount': int(money_to_paid * 100),
                 },
                 'quantity': 1,
             }],
             mode='payment',
+            success_url="http://127.0.0.1:8000/api/borrowings/",
         )
         return session
 
