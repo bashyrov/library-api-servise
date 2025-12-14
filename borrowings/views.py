@@ -4,9 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer
+from payments.services import PaymentService
 
 
 class BorrowingViewSet(mixins.ListModelMixin,
@@ -18,9 +18,13 @@ class BorrowingViewSet(mixins.ListModelMixin,
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user,
-        )
+        with transaction.atomic():
+            borrowing = serializer.save(
+                user=self.request.user,
+            )
+            payment = PaymentService.create_base_payment(borrowing)
+
+            self.extra_response_data = {"payment_session_url": payment.session_url}
 
     def retrieve(self, request, *args, **kwargs):
         borrowing_obj = self.get_object()
@@ -31,8 +35,16 @@ class BorrowingViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(borrowing_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+
+        if hasattr(self, "extra_response_data"):
+            response.data.update(self.extra_response_data)
+
+        return response
+
     @action(detail=True, methods=["post"], url_path="return")
-    def return_borrowing(self, request, pk=None): #TODO: Add validation to expected_date == actual_date
+    def return_borrowing(self, request, pk=None):
         borrowing_obj = self.get_object()
 
         if not borrowing_obj.user == self.request.user:
@@ -52,11 +64,17 @@ class BorrowingViewSet(mixins.ListModelMixin,
             book_obj = borrowing_obj.book
             book_obj.inventory += 1
             book_obj.save()
+            payment_fine = PaymentService.create_fine_payment(borrowing_obj)
 
-        return Response(
-            {"detail": "Returned successfully."},
-            status=status.HTTP_200_OK
-        )
+        message = {
+            "detail": "Returned successfully.",
+        }
+
+        if payment_fine:
+            message["payments"] = "Please pay the fine."
+            message["payment_session_url"] = payment_fine.session_url
+
+        return Response(message, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         user = self.request.user
