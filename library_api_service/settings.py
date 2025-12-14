@@ -29,6 +29,9 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "your-default)-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
+STRIPE_PUBLIC = os.environ.get("STRIPE_PUBLIC")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+
 ALLOWED_HOSTS = []
 
 
