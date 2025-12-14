@@ -4,9 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from borrowings.models import Borrowing
 from borrowings.serializers import BorrowingSerializer
+from payments.services import PaymentService
 
 
 class BorrowingViewSet(mixins.ListModelMixin,
@@ -52,11 +52,12 @@ class BorrowingViewSet(mixins.ListModelMixin,
             book_obj = borrowing_obj.book
             book_obj.inventory += 1
             book_obj.save()
+            payments = PaymentService.create_payments(borrowing_obj)
 
-        return Response(
-            {"detail": "Returned successfully."},
-            status=status.HTTP_200_OK
-        )
+        return Response({
+            "detail": "Returned successfully.",
+            "payments": "Please, check yours payments.",
+        }, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         user = self.request.user
