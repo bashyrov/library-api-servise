@@ -1,6 +1,8 @@
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from payments.models import Payment
@@ -46,3 +48,28 @@ class PaymentViewSet(mixins.ListModelMixin,
                 )
 
         return queryset
+
+
+class StripePaymentSuccessAPIView(APIView):
+    """
+    Called when Stripe Checkout succeeds.
+    """
+
+    def get(self, request):
+        return Response(
+            {"detail": "Payment successful. Thank you!"},
+            status=status.HTTP_200_OK
+        )
+
+
+class StripePaymentCancelAPIView(APIView):
+    """
+    Called when Stripe Checkout is cancelled.
+    """
+
+    def get(self, request):
+        return Response(
+            {"detail": "Payment was cancelled. You can try again."},
+            status=status.HTTP_200_OK
+        )
+
