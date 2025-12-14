@@ -1,6 +1,8 @@
 from decimal import Decimal
 import stripe
 from django.conf import settings
+from django.urls import reverse
+
 from borrowings.models import Borrowing
 from payments.models import Payment
 
@@ -23,7 +25,8 @@ class PaymentService:
                 'quantity': 1,
             }],
             mode='payment',
-            success_url="http://127.0.0.1:8000/api/borrowings/",
+            success_url=reverse("payments:stripe-success"),
+            cancel_url=reverse("payments:stripe-cancel"),
         )
         return session
 
