@@ -31,7 +31,8 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 STRIPE_PUBLIC = os.environ.get("STRIPE_PUBLIC")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
-
+STRIPE_SUCCESS_URL = os.environ.get("STRIPE_SUCCESS_URL")
+STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL")
 ALLOWED_HOSTS = []
 
 
