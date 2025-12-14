@@ -27,8 +27,8 @@ class Payment(models.Model):
     )
 
     borrowing = models.ForeignKey(Borrowing, on_delete=models.PROTECT, related_name="payments")
-    session_url = models.URLField(null=False, blank=False)
-    session_id = models.CharField(null=False, blank=False, max_length=255)
+    session_url = models.URLField(null=True, blank=True)
+    session_id = models.CharField(null=True, blank=True, max_length=255)
     money_to_paid = models.DecimalField(decimal_places=2, max_digits=10)
 
 

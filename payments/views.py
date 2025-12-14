@@ -1,12 +1,16 @@
+import stripe
+from django.conf import settings
 from rest_framework import mixins, viewsets, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class PaymentViewSet(mixins.ListModelMixin,
@@ -50,14 +54,44 @@ class PaymentViewSet(mixins.ListModelMixin,
         return queryset
 
 
-class StripePaymentSuccessAPIView(APIView):
-    """
-    Called when Stripe Checkout succeeds.
-    """
+class StripeSuccessAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
 
     def get(self, request):
+        session_id = request.query_params.get("session_id")
+
+        if not session_id:
+            return Response(
+                {"detail": "session_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+        except stripe.error.InvalidRequestError:
+            return Response(
+                {"detail": "Invalid session_id"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        customer = None
+        if session.customer:
+            customer = stripe.Customer.retrieve(session.customer)
+
         return Response(
-            {"detail": "Payment successful. Thank you!"},
+            {
+                "message": f"Thanks for your order, {customer.name if customer else 'customer'}!",
+                "session_id": session.id,
+                "payment_status": session.payment_status,
+                "amount_total": session.amount_total,
+                "currency": session.currency,
+                "customer": {
+                    "id": customer.id if customer else None,
+                    "name": customer.name if customer else None,
+                    "email": customer.email if customer else None,
+                },
+            },
             status=status.HTTP_200_OK
         )
 

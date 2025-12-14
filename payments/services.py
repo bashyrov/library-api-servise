@@ -23,7 +23,10 @@ class PaymentService:
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=settings.STRIPE_SUCCESS_URL,
+            success_url=(
+                f"{settings.STRIPE_SUCCESS_URL}"
+                "?session_id={CHECKOUT_SESSION_ID}"
+            ),
             cancel_url=settings.STRIPE_CANCEL_URL,
         )
         return session
