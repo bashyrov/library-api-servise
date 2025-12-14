@@ -5,7 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer
+from borrowings.serializers import BorrowingSerializer, BorrowingDetailSerializer
 from payments.services import PaymentService
 
 
@@ -108,4 +108,9 @@ class BorrowingViewSet(mixins.ListModelMixin,
                 )
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return BorrowingDetailSerializer
+        return BorrowingSerializer
 
