@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from borrowings.models import Borrowing
 from payments.serializers import PaymentSerializer
@@ -11,9 +12,12 @@ class BorrowingSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         book = data["book"]
+        expected_return_date = data["expected_return_date"]
 
         if book.inventory <= 0:
-            raise serializers.ValidationError("We don't have enough inventory")
+            raise serializers.ValidationError("We don't have enough inventory.")
+        if expected_return_date < datetime.date(datetime.today()):
+            raise serializers.ValidationError("Please enter a valid date.")
 
         return data
 
