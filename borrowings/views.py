@@ -32,7 +32,7 @@ class BorrowingViewSet(mixins.ListModelMixin,
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="return")
-    def return_borrowing(self, request, pk=None): #TODO: Add validation to expected_date == actual_date
+    def return_borrowing(self, request, pk=None):
         borrowing_obj = self.get_object()
 
         if not borrowing_obj.user == self.request.user:
