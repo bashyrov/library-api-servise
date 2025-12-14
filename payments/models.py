@@ -9,7 +9,7 @@ class Payment(models.Model):
         PENDING = "Pending"
         PAID =  "Paid"
 
-    class Type(models.TextChoices):
+    class TypeChoices(models.TextChoices):
         PAYMENT = "Payment"
         FINE = "Fine"
 
@@ -21,7 +21,7 @@ class Payment(models.Model):
 
     type = models.CharField(
         max_length=10,
-        choices=StatusChoices,
+        choices=TypeChoices,
     )
 
     borrowing = models.ForeignKey(Borrowing, on_delete=models.PROTECT, related_name="payments")
