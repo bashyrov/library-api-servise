@@ -25,8 +25,8 @@ class PaymentService:
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=reverse("payments:stripe-success"),
-            cancel_url=reverse("payments:stripe-cancel"),
+            success_url="http://127.0.0.1:8000/api/payments/success",
+            cancel_url="http://127.0.0.1:8000/api/payments/cancel"
         )
         return session
 
@@ -51,36 +51,24 @@ class PaymentService:
         return payment
 
     @staticmethod
-    def create_fine_payment(borrowing: Borrowing, overdue_days: int) -> Payment:
-        price_per_day = borrowing.book.daily_fee
-        amount = Decimal(price_per_day * overdue_days)
-
-        payment_session = PaymentService.create_checkout_session(borrowing, amount)
-
-        fine = Payment.objects.create(
-            status=Payment.StatusChoices.PENDING,
-            type=Payment.TypeChoices.FINE,
-            borrowing=borrowing,
-            session_url=payment_session.url,
-            session_id=payment_session.id,
-            money_to_paid=amount,
-        )
-        return fine
-
-    @staticmethod
-    def create_payments(borrowing: Borrowing):
-        base_payment = PaymentService.create_base_payment(borrowing)
-        fine_payment = None
-
+    def create_fine_payment(borrowing: Borrowing) -> Payment:
         if borrowing.actual_return_date:
             overdue_days = (
                     borrowing.actual_return_date - borrowing.expected_return_date
             ).days
 
             if overdue_days > 0:
-                fine_payment = PaymentService.create_fine_payment(borrowing, overdue_days)
+                price_per_day = borrowing.book.daily_fee
+                amount = Decimal(price_per_day * overdue_days)
 
-        return {
-            "base_payment": base_payment,
-            "fine_payment": fine_payment,
-        }
+                payment_session = PaymentService.create_checkout_session(borrowing, amount)
+
+                fine = Payment.objects.create(
+                    status=Payment.StatusChoices.PENDING,
+                    type=Payment.TypeChoices.FINE,
+                    borrowing=borrowing,
+                    session_url=payment_session.url,
+                    session_id=payment_session.id,
+                    money_to_paid=amount,
+                )
+                return fine

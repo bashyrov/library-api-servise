@@ -18,9 +18,13 @@ class BorrowingViewSet(mixins.ListModelMixin,
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user,
-        )
+        with transaction.atomic():
+            borrowing = serializer.save(
+                user=self.request.user,
+            )
+            payment = PaymentService.create_base_payment(borrowing)
+
+            self.extra_response_data = {"payment_session_url": payment.session_url}
 
     def retrieve(self, request, *args, **kwargs):
         borrowing_obj = self.get_object()
@@ -30,6 +34,14 @@ class BorrowingViewSet(mixins.ListModelMixin,
 
         serializer = self.get_serializer(borrowing_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+
+        if hasattr(self, "extra_response_data"):
+            response.data.update(self.extra_response_data)
+
+        return response
 
     @action(detail=True, methods=["post"], url_path="return")
     def return_borrowing(self, request, pk=None):
@@ -52,12 +64,17 @@ class BorrowingViewSet(mixins.ListModelMixin,
             book_obj = borrowing_obj.book
             book_obj.inventory += 1
             book_obj.save()
-            payments = PaymentService.create_payments(borrowing_obj)
+            payment_fine = PaymentService.create_fine_payment(borrowing_obj)
 
-        return Response({
+        message = {
             "detail": "Returned successfully.",
-            "payments": "Please, check yours payments.",
-        }, status=status.HTTP_200_OK)
+        }
+
+        if payment_fine:
+            message["payments"] = "Please pay the fine."
+            message["payment_session_url"] = payment_fine.session_url
+
+        return Response(message, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         user = self.request.user
