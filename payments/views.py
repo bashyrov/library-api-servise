@@ -27,7 +27,7 @@ class PaymentViewSet(mixins.ListModelMixin,
         queryset = Payment.objects.all()
 
         if not is_user_admin:
-            queryset = queryset.filter(user=user)
+            queryset = queryset.filter(borrowing__user=user)
 
         user_pk = self.request.query_params.get("user_id")
         type = self.request.query_params.get("type")
