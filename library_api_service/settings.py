@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "payments",
-    "tg_notifications"
+    "tg_notifications",
+    "tg_notifications.apps.TgNotificationsConfig"
 ]
 
 MIDDLEWARE = [
