@@ -39,7 +39,7 @@ class PaymentService:
         start_date = borrowing.borrow_date
         end_date = borrowing.expected_return_date
         price_per_day = borrowing.book.daily_fee
-        duration = (end_date - start_date).days
+        duration = max( 1, (end_date - start_date).days)
         amount = Decimal(price_per_day * duration)
 
         payment = Payment.objects.create(
@@ -60,9 +60,10 @@ class PaymentService:
     @staticmethod
     def create_fine_payment(borrowing: Borrowing) -> Payment:
         if borrowing.actual_return_date:
-            overdue_days = (
-                    borrowing.actual_return_date - borrowing.expected_return_date
-            ).days
+            overdue_days = max(
+                1,
+                (borrowing.actual_return_date - borrowing.expected_return_date).days
+            )
 
             if overdue_days > 0:
                 price_per_day = borrowing.book.daily_fee
