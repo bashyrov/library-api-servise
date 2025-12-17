@@ -1,6 +1,8 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from payments.views import PaymentViewSet, StripePaymentCancelAPIView, StripeSuccessAPIView
+from payments.views import (PaymentViewSet,
+                            StripePaymentCancelAPIView,
+                            StripeSuccessAPIView)
 
 app_name = 'payments'
 

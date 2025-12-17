@@ -75,25 +75,42 @@ class StripeSuccessAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        if session.payment_status != "paid":
+            return Response(
+                {"detail": "Payment not completed"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        payment_id = session.metadata.get("payment_id")
+        if not payment_id:
+            return Response(
+                {"detail": "payment_id not found"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        updated = Payment.objects.filter(
+            id=payment_id,
+            status=Payment.StatusChoices.PENDING,
+        ).update(status=Payment.StatusChoices.PAID)
+
         customer = None
         if session.customer:
             customer = stripe.Customer.retrieve(session.customer)
 
         return Response(
             {
-                "message": f"Thanks for your order, {customer.name if customer else 'customer'}!",
-                "session_id": session.id,
-                "payment_status": session.payment_status,
+                "message": "Payment successful",
+                "payment_id": payment_id,
                 "amount_total": session.amount_total,
                 "currency": session.currency,
                 "customer": {
-                    "id": customer.id if customer else None,
                     "name": customer.name if customer else None,
                     "email": customer.email if customer else None,
                 },
             },
             status=status.HTTP_200_OK
         )
+
 
 
 class StripePaymentCancelAPIView(APIView):

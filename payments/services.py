@@ -10,7 +10,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 class PaymentService:
 
     @staticmethod
-    def create_checkout_session(borrowing: Borrowing, money_to_paid=Decimal(0)):
+    def create_checkout_session(borrowing: Borrowing, payment: Payment, money_to_paid=Decimal(0)):
         session = stripe.checkout.Session.create(
             line_items=[{
                 'price_data': {
@@ -28,6 +28,9 @@ class PaymentService:
                 "?session_id={CHECKOUT_SESSION_ID}"
             ),
             cancel_url=settings.STRIPE_CANCEL_URL,
+            metadata={
+                "payment_id": payment.id,
+            },
         )
         return session
 
@@ -39,16 +42,19 @@ class PaymentService:
         duration = (end_date - start_date).days
         amount = Decimal(price_per_day * duration)
 
-        payment_session = PaymentService.create_checkout_session(borrowing, amount)
-
         payment = Payment.objects.create(
             status=Payment.StatusChoices.PENDING,
             type=Payment.TypeChoices.PAYMENT,
             borrowing=borrowing,
-            session_url=payment_session.url,
-            session_id=payment_session.id,
             money_to_paid=amount,
         )
+
+        payment_session = PaymentService.create_checkout_session(borrowing=borrowing, payment=payment, money_to_paid=amount)
+
+        payment.session_url = payment_session.url
+        payment.session_id = payment_session.id
+        payment.save(update_fields=['session_url', 'session_id'])
+
         return payment
 
     @staticmethod
@@ -62,14 +68,17 @@ class PaymentService:
                 price_per_day = borrowing.book.daily_fee
                 amount = Decimal(price_per_day * overdue_days)
 
-                payment_session = PaymentService.create_checkout_session(borrowing, amount)
-
                 fine = Payment.objects.create(
                     status=Payment.StatusChoices.PENDING,
                     type=Payment.TypeChoices.FINE,
                     borrowing=borrowing,
-                    session_url=payment_session.url,
-                    session_id=payment_session.id,
                     money_to_paid=amount,
                 )
+
+                payment_session = PaymentService.create_checkout_session(borrowing=borrowing, payment=fine, money_to_paid=amount)
+
+                fine.session_url = payment_session.url
+                fine.session_id = payment_session.id
+                fine.save(update_fields=['session_url', 'session_id'])
+
                 return fine
