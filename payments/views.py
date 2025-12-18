@@ -88,10 +88,9 @@ class StripeSuccessAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        updated = Payment.objects.filter(
-            id=payment_id,
-            status=Payment.StatusChoices.PENDING,
-        ).update(status=Payment.StatusChoices.PAID)
+        payment_obj = Payment.objects.get(id=payment_id)
+        payment_obj.status = Payment.StatusChoices.PAID
+        payment_obj.save(update_fields=['status'])
 
         customer = None
         if session.customer:
