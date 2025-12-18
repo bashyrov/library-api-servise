@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     "tg_notifications.apps.TgNotificationsConfig",
     "django_celery_beat",
     "psycopg",
-    "psycopg_binary"
+    "psycopg_binary",
+    "drf_spectacular"
 ]
 
 MIDDLEWARE = [
@@ -151,7 +152,15 @@ AUTH_USER_MODEL = 'users.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Library Api Service',
+    'DESCRIPTION': 'Borrow your first book online today!',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 SIMPLE_JWT = {

@@ -1,5 +1,7 @@
 import stripe
 from django.conf import settings
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, viewsets, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -55,6 +57,59 @@ class PaymentViewSet(mixins.ListModelMixin,
                 )
 
         return queryset
+
+    @extend_schema(
+        summary="Get list of payments",
+        description=(
+                "Retrieve a list of payments.\n\n"
+                "Permissions:\n"
+                "- Regular users see only payments related to their borrowings\n"
+                "- Admin users can see all payments\n\n"
+                "Filters:\n"
+                "- **type=payment** → base payments\n"
+                "- **type=fine** → fine payments\n"
+                "- **user_id** → filter by user (admin only)"
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="type",
+                type=OpenApiTypes.STR,
+                required=False,
+                description="Payment type: 'payment' or 'fine'",
+                enum=["payment", "fine"],
+            ),
+            OpenApiParameter(
+                name="user_id",
+                type=OpenApiTypes.INT,
+                required=False,
+                description="Filter payments by user ID (admin only)",
+            ),
+        ],
+        responses={
+            200: PaymentSerializer(many=True),
+            403: OpenApiTypes.OBJECT,
+            401: OpenApiTypes.OBJECT,
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve payment",
+        description=(
+                "Retrieve detailed information about a payment.\n\n"
+                "Permissions:\n"
+                "- Regular users can access only their own payments\n"
+                "- Admin users can access any payment"
+        ),
+        responses={
+            200: PaymentSerializer,
+            403: OpenApiTypes.OBJECT,
+            404: OpenApiTypes.OBJECT,
+        },
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
 
 class StripeSuccessAPIView(APIView):
