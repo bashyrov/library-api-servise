@@ -3,7 +3,7 @@ from django.dispatch import receiver
 
 from borrowings.models import Borrowing
 from payments.models import Payment
-from tg_notifications.tasks import notify_admins
+from tg_notifications.tasks import send_telegram_notification
 from payments.models import Payment
 
 
@@ -15,7 +15,7 @@ def notify_borrowing_created(sender, instance, created, **kwargs):
     if not created:
         return
 
-    notify_admins.delay(
+    send_telegram_notification.delay(
         f"📚 New borrowing created\n"
         f"User: {instance.user.email}\n"
         f"Book: {instance.book.title}\n"
@@ -31,7 +31,7 @@ def notify_payment_paid(sender, instance, created, **kwargs):
     if instance.status != Payment.StatusChoices.PAID:
         return
 
-    notify_admins.delay(
+    send_telegram_notification.delay(
         f"💳 Payment successful\n"
         f"User: {instance.borrowing.user.email}\n"
         f"Amount: {instance.money_to_paid}\n"
