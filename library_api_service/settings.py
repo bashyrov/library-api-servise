@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,10 +30,16 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "your-default)-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
+#STRIPE
 STRIPE_PUBLIC = os.environ.get("STRIPE_PUBLIC")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_SUCCESS_URL = os.environ.get("STRIPE_SUCCESS_URL")
 STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL")
+
+#TELEGRAM
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+ADMIN_TELEGRAM_CHAT_ID = os.environ.get("ADMIN_TELEGRAM_CHAT_IDS")
+
 ALLOWED_HOSTS = []
 
 
@@ -51,8 +58,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "payments",
-    "tg_notifications",
-    "tg_notifications.apps.TgNotificationsConfig"
+    "tg_notifications.apps.TgNotificationsConfig",
+    "django_celery_beat"
 ]
 
 MIDDLEWARE = [
@@ -146,3 +153,21 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=12),
     "ROTATE_REFRESH_TOKENS": False,
 }
+
+#CELERY
+CELERY_BEAT_SCHEDULE = {
+    "daily_summary_notification": {
+        "task": "notifications.tasks.daily_summary",
+        "schedule": crontab(hour=20, minute=0),
+        "args": (),
+    },
+
+    "check_overdue_borrowings": {
+        "task": "notifications.tasks.check_overdue_borrowings",
+        "schedule": crontab(hour=20, minute=1),
+        "args": (),
+    },
+}
+
+CELERY_BACKEND_URL = os.environ.get("CELERY_BACKEND_URL")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
