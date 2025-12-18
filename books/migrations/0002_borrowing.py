@@ -14,12 +14,28 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Borrowing',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('borrow_date', models.DateField(auto_now_add=True)),
-                ('expected_return_date', models.DateField()),
-                ('actual_return_date', models.DateField(default='0000-00-00')),
-                ('user', models.CharField(default='Test', max_length=100)),
-                ('book', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='books.book')),
+                ('id',
+                 models.BigAutoField(
+                     auto_created=True,
+                     primary_key=True,
+                     serialize=False,
+                     verbose_name='ID')),
+                ('borrow_date',
+                 models.DateField(
+                     auto_now_add=True)),
+                ('expected_return_date',
+                 models.DateField()),
+                ('actual_return_date',
+                 models.DateField(
+                     default='0000-00-00')),
+                ('user',
+                 models.CharField(
+                     default='Test',
+                     max_length=100)),
+                ('book',
+                 models.ForeignKey(
+                     on_delete=django.db.models.deletion.CASCADE,
+                     to='books.book')),
             ],
         ),
     ]

@@ -5,14 +5,23 @@ from payments.models import Payment
 from tg_notifications.services.telegram_bot import send_message
 
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={"max_retries": 3})
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_kwargs={
+        "max_retries": 3
+    }
+)
 def send_telegram_notification(self, text: str):
     send_message(text)
 
 
 @shared_task
 def check_overdue_borrowings():
-    overdue = Borrowing.objects.filter(expected_return_date__lt=now().date(), actual_return_date__isnull=True)
+    overdue = Borrowing.objects.filter(
+        expected_return_date__lt=now().date(),
+        actual_return_date__isnull=True
+    )
     for b in overdue:
         send_telegram_notification.delay(
             f"⚠️ Borrowing #{b.id} by {b.user.email} is overdue!"

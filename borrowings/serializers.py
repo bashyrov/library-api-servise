@@ -7,7 +7,14 @@ from payments.serializers import PaymentSerializer
 class BorrowingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Borrowing
-        fields = ("id", "borrow_date", "expected_return_date", "actual_return_date", "book", "user", )
+        fields = (
+            "id",
+            "borrow_date",
+            "expected_return_date",
+            "actual_return_date",
+            "book",
+            "user",
+        )
         read_only_fields = ("user", "actual_return_date", "borrow_date")
 
     def validate(self, data):
@@ -15,7 +22,8 @@ class BorrowingSerializer(serializers.ModelSerializer):
         expected_return_date = data["expected_return_date"]
 
         if book.inventory <= 0:
-            raise serializers.ValidationError("We don't have enough inventory.")
+            raise serializers.ValidationError(
+                "We don't have enough inventory.")
         if expected_return_date < datetime.date(datetime.today()):
             raise serializers.ValidationError("Please enter a valid date.")
 
@@ -27,5 +35,11 @@ class BorrowingDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Borrowing
-        fields = ("id", "borrow_date", "expected_return_date", "actual_return_date", "book", "user", "payments")
-
+        fields = (
+            "id",
+            "borrow_date",
+            "expected_return_date",
+            "actual_return_date",
+            "book",
+            "user",
+            "payments")

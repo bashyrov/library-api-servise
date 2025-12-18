@@ -10,7 +10,10 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 class PaymentService:
 
     @staticmethod
-    def create_checkout_session(borrowing: Borrowing, payment: Payment, money_to_paid=Decimal(0)):
+    def create_checkout_session(
+            borrowing: Borrowing,
+            payment: Payment,
+            money_to_paid=Decimal(0)):
         session = stripe.checkout.Session.create(
             line_items=[{
                 'price_data': {
@@ -39,7 +42,7 @@ class PaymentService:
         start_date = borrowing.borrow_date
         end_date = borrowing.expected_return_date
         price_per_day = borrowing.book.daily_fee
-        duration = max( 1, (end_date - start_date).days)
+        duration = max(1, (end_date - start_date).days)
         amount = Decimal(price_per_day * duration)
 
         payment = Payment.objects.create(
@@ -49,7 +52,8 @@ class PaymentService:
             money_to_paid=amount,
         )
 
-        payment_session = PaymentService.create_checkout_session(borrowing=borrowing, payment=payment, money_to_paid=amount)
+        payment_session = PaymentService.create_checkout_session(
+            borrowing=borrowing, payment=payment, money_to_paid=amount)
 
         payment.session_url = payment_session.url
         payment.session_id = payment_session.id
@@ -62,7 +66,10 @@ class PaymentService:
         if borrowing.actual_return_date:
             overdue_days = max(
                 1,
-                (borrowing.actual_return_date - borrowing.expected_return_date).days
+                (
+                    borrowing.actual_return_date -
+                    borrowing.expected_return_date
+                ).days
             )
 
             if overdue_days > 0:
@@ -76,7 +83,8 @@ class PaymentService:
                     money_to_paid=amount,
                 )
 
-                payment_session = PaymentService.create_checkout_session(borrowing=borrowing, payment=fine, money_to_paid=amount)
+                payment_session = PaymentService.create_checkout_session(
+                    borrowing=borrowing, payment=fine, money_to_paid=amount)
 
                 fine.session_url = payment_session.url
                 fine.session_id = payment_session.id

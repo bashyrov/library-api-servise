@@ -1,6 +1,4 @@
 from datetime import date
-from http.client import responses
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
@@ -25,7 +23,7 @@ def sample_book():
     )
 
 
-def sample_borrowing(client:  user_model, book: Book = None):
+def sample_borrowing(client: user_model, book: Book = None):
     if book is None:
         book = sample_book()
 
@@ -67,7 +65,7 @@ class AuthenticatedBorrowingsTest(TestCase):
             "book": book_obj.pk,
         }
 
-        response = self.client.post(
+        self.client.post(
             BORROWINGS_URL,
             payload,
             format="json"
@@ -117,21 +115,27 @@ class AuthenticatedBorrowingsTest(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data["detail"], "You don't have permission to view this borrowing.")
+        self.assertEqual(
+            response.data["detail"],
+            "You don't have permission to view this borrowing.")
 
     def test_return_book_increase_inventory(self):
         borrowings_obj = sample_borrowing(client=self.user)
         book_obj_before = borrowings_obj.book
 
         response = self.client.post(
-            reverse("borrowings:borrowings-return-borrowing", args=[borrowings_obj.id])
-        )
+            reverse(
+                "borrowings:borrowings-return-borrowing",
+                args=[
+                    borrowings_obj.id]))
 
         book_obj_after = Book.objects.get(pk=book_obj_before.pk)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["detail"], "Returned successfully.")
-        self.assertEqual(book_obj_after.inventory, book_obj_before.inventory + 1)
+        self.assertEqual(
+            book_obj_after.inventory,
+            book_obj_before.inventory + 1)
 
 
 class AdminBorrowingsTest(TestCase):
@@ -163,6 +167,3 @@ class AdminBorrowingsTest(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-

@@ -5,7 +5,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer, BorrowingDetailSerializer
+from borrowings.serializers import (BorrowingSerializer,
+                                    BorrowingDetailSerializer)
 from payments.services import PaymentService
 
 
@@ -24,7 +25,8 @@ class BorrowingViewSet(mixins.ListModelMixin,
             )
             payment = PaymentService.create_base_payment(borrowing)
 
-            self.extra_response_data = {"payment_session_url": payment.session_url}
+            self.extra_response_data = {
+                "payment_session_url": payment.session_url}
 
     def retrieve(self, request, *args, **kwargs):
         borrowing_obj = self.get_object()
@@ -97,7 +99,10 @@ class BorrowingViewSet(mixins.ListModelMixin,
         if user_pk:
             if not is_user_admin:
                 raise PermissionDenied(
-                    {"detail": "You don't have permission to view this borrowing."}
+                    {
+                        "detail":
+                            "You don't have permission to view this borrowing."
+                    }
                 )
             user_pk = int(user_pk)
             try:
@@ -113,4 +118,3 @@ class BorrowingViewSet(mixins.ListModelMixin,
         if self.action == "retrieve":
             return BorrowingDetailSerializer
         return BorrowingSerializer
-

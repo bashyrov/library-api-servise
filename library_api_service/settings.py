@@ -30,13 +30,13 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "your-default)-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
-#STRIPE
+# STRIPE
 STRIPE_PUBLIC = os.environ.get("STRIPE_PUBLIC")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_SUCCESS_URL = os.environ.get("STRIPE_SUCCESS_URL")
 STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL")
 
-#TELEGRAM
+# TELEGRAM
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 ADMIN_TELEGRAM_CHAT_ID = os.environ.get("ADMIN_TELEGRAM_CHAT_ID")
 
@@ -160,7 +160,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
 }
 
-#CELERY
+# CELERY
 CELERY_BEAT_SCHEDULE = {
     "daily_summary_notification": {
         "task": "notifications.tasks.daily_summary",

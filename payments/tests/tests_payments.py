@@ -1,22 +1,16 @@
 import datetime
 from datetime import date, timedelta
-from http.client import responses
-from unittest import mock
-
-import requests
 import stripe
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient
 from rest_framework.reverse import reverse
-
-from books.models import Book
-from borrowings.tests.tests_borrowings import sample_book, BORROWINGS_URL, sample_borrowing
+from borrowings.tests.tests_borrowings import (sample_book,
+                                               BORROWINGS_URL,
+                                               sample_borrowing)
 from payments.models import Payment
-from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer
 from payments.serializers import PaymentSerializer
 
 PAYMENTS_URL = reverse("payments:payments-list")
@@ -24,7 +18,8 @@ PAYMENTS_URL = reverse("payments:payments-list")
 user_model = get_user_model()
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-def sample_payment(client:  user_model):
+
+def sample_payment(client: user_model):
     borrowing = sample_borrowing(client=client)
 
     return Payment.objects.create(
@@ -96,15 +91,18 @@ class AuthenticatedPaymentsTest(TestCase):
         borrowing.save()
 
         response = self.client.post(
-            reverse("borrowings:borrowings-return-borrowing", kwargs={"pk": borrowing.id}),
-            format="json"
-        )
+            reverse(
+                "borrowings:borrowings-return-borrowing",
+                kwargs={
+                    "pk": borrowing.id}),
+            format="json")
 
         payment_session_url = response.data["payment_session_url"]
         session_id = payment_session_url.split("#")[0][34:]
         checkout_session = stripe.checkout.Session.retrieve(session_id)
         expected_amount_to_pay = checkout_session.amount_total / 100
-        overdue_fee = book_obj.daily_fee * (datetime.date.today() - borrowing.expected_return_date).days
+        overdue_fee = book_obj.daily_fee * \
+            (datetime.date.today() - borrowing.expected_return_date).days
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(overdue_fee, expected_amount_to_pay)
@@ -132,10 +130,8 @@ class AuthenticatedPaymentsTest(TestCase):
         session_id = payment_session_url.split("#")[0][34:]
         checkout_session = stripe.checkout.Session.retrieve(session_id)
         expected_amount_to_pay = checkout_session.amount_total / 100
-        base_fee = book_obj.daily_fee * (datetime.date.today() - borrowing.borrow_date).days
+        base_fee = book_obj.daily_fee * \
+            (datetime.date.today() - borrowing.borrow_date).days
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(base_fee, expected_amount_to_pay)
-
-
-
