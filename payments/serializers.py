@@ -1,0 +1,14 @@
+from rest_framework import serializers
+from payments.models import Payment
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = (
+            "status",
+            "type",
+            "borrowing",
+            "session_id",
+            "session_url",
+            "money_to_paid")

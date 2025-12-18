@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,17 +30,39 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "your-default)-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
+# STRIPE
+STRIPE_PUBLIC = os.environ.get("STRIPE_PUBLIC")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_SUCCESS_URL = os.environ.get("STRIPE_SUCCESS_URL")
+STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL")
+
+# TELEGRAM
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+ADMIN_TELEGRAM_CHAT_ID = os.environ.get("ADMIN_TELEGRAM_CHAT_ID")
+
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "books",
+    "borrowings",
+    "users",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "payments",
+    "tg_notifications.apps.TgNotificationsConfig",
+    "django_celery_beat",
+    "psycopg",
+    "psycopg_binary",
+    "drf_spectacular"
 ]
 
 MIDDLEWARE = [
@@ -72,15 +96,19 @@ WSGI_APPLICATION = "library_api_service.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "db_name"),
+        "USER": os.getenv("POSTGRES_USER", "db_user"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "db_user_pass"),
+        "HOST": os.getenv("POSTGRES_HOST", "db_host"),
+        "PORT": os.getenv("POSTGRES_PORT", "db_port"),
     }
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -117,3 +145,44 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+AUTH_USER_MODEL = 'users.User'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Library Api Service',
+    'DESCRIPTION': 'Borrow your first book online today!',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=12),
+    "ROTATE_REFRESH_TOKENS": False,
+}
+
+# CELERY
+CELERY_BEAT_SCHEDULE = {
+    "daily_summary_notification": {
+        "task": "notifications.tasks.daily_summary",
+        "schedule": crontab(hour=20, minute=0),
+        "args": (),
+    },
+
+    "check_overdue_borrowings": {
+        "task": "notifications.tasks.check_overdue_borrowings",
+        "schedule": crontab(hour=20, minute=1),
+        "args": (),
+    },
+}
+
+CELERY_BACKEND_URL = os.environ.get("CELERY_BACKEND_URL")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
