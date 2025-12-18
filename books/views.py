@@ -27,7 +27,8 @@ class BookViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Retrieve book",
-        description="Retrieve detailed information about a book. Public access.",
+        description="Retrieve detailed information about a book. "
+                    "Public access.",
         responses={
             200: BooksSerializer,
             404: OpenApiTypes.OBJECT,

@@ -63,7 +63,8 @@ class PaymentViewSet(mixins.ListModelMixin,
         description=(
                 "Retrieve a list of payments.\n\n"
                 "Permissions:\n"
-                "- Regular users see only payments related to their borrowings\n"
+                "- Regular users see only "
+                "payments related to their borrowings\n"
                 "- Admin users can see all payments\n\n"
                 "Filters:\n"
                 "- **type=payment** → base payments\n"

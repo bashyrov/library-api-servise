@@ -1,6 +1,8 @@
 from django.db import transaction
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiExample, extend_schema, OpenApiParameter
+from drf_spectacular.utils import (OpenApiExample,
+                                   extend_schema,
+                                   OpenApiParameter)
 from rest_framework import status, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -101,8 +103,10 @@ class BorrowingViewSet(mixins.ListModelMixin,
                 "Marks the borrowing as returned.\n\n"
                 "Rules:\n"
                 "- Users can return only their own borrowings\n"
-                "- If the borrowing is already returned, an error is returned\n"
-                "- If the borrowing is overdue, a fine payment session is created\n\n"
+                "- If the borrowing is "
+                "already returned, an error is returned\n"
+                "- If the borrowing is overdue, "
+                "a fine payment session is created\n\n"
                 "Side effects:\n"
                 "- Sets actual return date\n"
                 "- Increases book inventory\n"
@@ -259,7 +263,8 @@ class BorrowingViewSet(mixins.ListModelMixin,
             OpenApiExample(
                 name="Permission denied",
                 value={
-                    "detail": "You do not have permission to perform this action."
+                    "detail":
+                        "You do not have permission to perform this action."
                 },
                 response_only=True,
                 status_codes=["403"],
