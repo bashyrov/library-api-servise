@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import URLValidator
 from django.db import models
 
@@ -27,9 +25,12 @@ class Payment(models.Model):
         choices=TypeChoices,
     )
 
-    borrowing = models.ForeignKey(Borrowing, on_delete=models.PROTECT, related_name="payments")
-    session_url = models.TextField(blank=True, null=True, validators=[URLValidator()])
+    borrowing = models.ForeignKey(
+        Borrowing,
+        on_delete=models.PROTECT,
+        related_name="payments")
+    session_url = models.TextField(
+        blank=True, null=True, validators=[
+            URLValidator()])
     session_id = models.CharField(null=True, blank=True, max_length=255)
     money_to_paid = models.DecimalField(decimal_places=2, max_digits=10)
-
-

@@ -7,6 +7,3 @@ router = DefaultRouter()
 router.register("", BorrowingViewSet, basename="borrowings")
 
 urlpatterns = [] + router.urls
-
-
-

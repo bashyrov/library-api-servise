@@ -1,8 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
 from borrowings.models import Borrowing
-from payments.models import Payment
 from tg_notifications.tasks import send_telegram_notification
 from payments.models import Payment
 

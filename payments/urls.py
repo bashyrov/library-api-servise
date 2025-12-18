@@ -10,9 +10,12 @@ router = DefaultRouter()
 router.register("", PaymentViewSet, basename="payments")
 
 urlpatterns = [
-    path('success/', StripeSuccessAPIView.as_view(), name='stripe-success'),
-    path('cancel/', StripePaymentCancelAPIView.as_view(), name='stripe-cancel'),
+    path(
+        'success/',
+        StripeSuccessAPIView.as_view(),
+        name='stripe-success'),
+    path(
+        'cancel/',
+        StripePaymentCancelAPIView.as_view(),
+        name='stripe-cancel'),
 ] + router.urls
-
-
-

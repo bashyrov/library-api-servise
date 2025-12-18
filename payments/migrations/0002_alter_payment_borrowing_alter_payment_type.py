@@ -15,11 +15,20 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='payment',
             name='borrowing',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='payments', to='borrowings.borrowing'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name='payments',
+                to='borrowings.borrowing'),
         ),
         migrations.AlterField(
             model_name='payment',
             name='type',
-            field=models.CharField(choices=[('Payment', 'Payment'), ('Fine', 'Fine')], max_length=10),
+            field=models.CharField(
+                choices=[
+                    ('Payment',
+                     'Payment'),
+                    ('Fine',
+                     'Fine')],
+                max_length=10),
         ),
     ]

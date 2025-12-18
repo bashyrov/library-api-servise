@@ -41,7 +41,10 @@ class PaymentViewSet(mixins.ListModelMixin,
         if user_pk:
             if not is_user_admin:
                 raise PermissionDenied(
-                    {"detail": "You don't have permission to view this borrowing."}
+                    {
+                        "detail":
+                            "You don't have permission to view this borrowing."
+                    }
                 )
             user_pk = int(user_pk)
             try:
@@ -111,7 +114,6 @@ class StripeSuccessAPIView(APIView):
         )
 
 
-
 class StripePaymentCancelAPIView(APIView):
     """
     Called when Stripe Checkout is cancelled.
@@ -122,4 +124,3 @@ class StripePaymentCancelAPIView(APIView):
             {"detail": "Payment was cancelled. You can try again."},
             status=status.HTTP_200_OK
         )
-
