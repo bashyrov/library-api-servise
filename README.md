@@ -1,4 +1,3 @@
-#!/bin/bash
 # Library API
 **Online Library Management System**  
 Modern REST API built with **Django REST Framework**, featuring JWT authentication, book inventory management, borrowing tracking, Stripe payments, Telegram notifications, and interactive documentation.  
