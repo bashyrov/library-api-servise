@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from borrowings.models import Borrowing
 from borrowings.serializers import (BorrowingSerializer,
                                     BorrowingDetailSerializer)
@@ -19,6 +21,7 @@ class BorrowingViewSet(mixins.ListModelMixin,
                        ):
     serializer_class = BorrowingSerializer
     permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication, )
 
     def perform_create(self, serializer):
         with transaction.atomic():

@@ -1,7 +1,9 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from users.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
@@ -69,6 +71,8 @@ class LoginUserView(ObtainAuthToken):
 )
 class ManageUserView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication, )
 
     def get_object(self):
         return self.request.user
