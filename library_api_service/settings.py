@@ -38,7 +38,7 @@ STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL")
 
 #TELEGRAM
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-ADMIN_TELEGRAM_CHAT_ID = os.environ.get("ADMIN_TELEGRAM_CHAT_IDS")
+ADMIN_TELEGRAM_CHAT_ID = os.environ.get("ADMIN_TELEGRAM_CHAT_ID")
 
 ALLOWED_HOSTS = []
 
@@ -59,7 +59,9 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "payments",
     "tg_notifications.apps.TgNotificationsConfig",
-    "django_celery_beat"
+    "django_celery_beat",
+    "psycopg",
+    "psycopg_binary"
 ]
 
 MIDDLEWARE = [
